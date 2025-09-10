@@ -1,66 +1,90 @@
-using LANMatching;
+using System.Collections.Generic;
+using ExitGames.Client.Photon;
+using Photon.Pun;
+using Photon.Pun.UtilityScripts;
+using Photon.Realtime;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class OnlineView : MonoBehaviour
+public class OnlineView : MonoBehaviourPunCallbacks, IInRoomCallbacks
 {
     [SerializeField] private OseroTitleView _titleView;
+    [SerializeField] private TextMeshProUGUI _roomMembers;
     [SerializeField] private Button _createRoomBtn;
-    [SerializeField] private Button _searchRoomBtn;
+
     [SerializeField] private Button _exitOnlineBtn;
+    [SerializeField] private TMP_InputField _ipt_PlayerName;
     [SerializeField] private GameObject _view;
 
     void Start()
     {
         Hide();
-        _createRoomBtn.onClick.AddListener(() => { CreateRoom(); });
-        _searchRoomBtn.onClick.AddListener(() => { SearchRoom(); });
+
+        _createRoomBtn.onClick.AddListener(() =>
+        {
+            PhotonNetwork.NickName = _ipt_PlayerName.text;
+            // "Room"という名前のルームに参加する（ルームが存在しなければ作成して参加する）
+            PhotonNetwork.JoinOrCreateRoom("Room", new RoomOptions(), TypedLobby.Default);
+        });
         _exitOnlineBtn.onClick.AddListener(() => { ExitOnline(); });
     }
 
-    public void CreateRoom()
+    private void RefreshPlayers()
     {
-        byte limitUser = 2; // <- 最大参加人数
-        int serverPort = 8888; // <- 実際のサーバー接続時に待っているポート番号
-        var roomInfo = new RoomInfo("初心者歓迎ルーム", serverPort, limitUser);
-        // Hostルームの設定をします
-        LANRoomManager.Instance.hostRoomInfo = roomInfo;
-        // 募集を開始します
-        LANRoomManager.Instance.StartHostThread();
+        _roomMembers.text = "";
+        foreach (var item in PhotonNetwork.CurrentRoom.Players)
+        {
+            _roomMembers.text += item.Value.NickName + '\n';
+        }
     }
-    public void SearchRoom()
+    // マスターサーバーへの接続が成功した時に呼ばれるコールバック
+    public override void OnConnectedToMaster()
     {
-        LANRoomManager.Instance.OnFindNewRoom = (hostRoomInfo) =>
+        Debug.Log("OnConnectedToMaster");
+    }
+    public override void OnRoomListUpdate(List<RoomInfo> roomList)
+    {
+        foreach (var item in roomList)
         {
-            Debug.Log("新規ルームが見つかりました：" + hostRoomInfo.roomInfo.name);
-        };
-        LANRoomManager.Instance.OnChangeRoom = (hostRoomInfo) =>
-        {
-            Debug.Log("情報が変更されました:" + hostRoomInfo.roomInfo.name);
-        };
-        LANRoomManager.Instance.OnLoseRoom = (hostRoomInfo) =>
-        {
-            Debug.Log("ルームが閉じました:" + hostRoomInfo.roomInfo.name);
-        };
-        LANRoomManager.Instance.StartClientThread();
+            Debug.Log("OnRoomListUpdate:" + item.Name);
+        }
     }
 
+    // ゲームサーバーへの接続が成功した時に呼ばれるコールバック
+    public override void OnJoinedRoom()
+    {
+        Debug.Log("OnJoinedRoom");
+        RefreshPlayers();
+    }
+    public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
+    {
+        RefreshPlayers();
+    }
+    public override void OnJoinRandomFailed(short returnCode, string message)
+    {
+        Debug.LogError($"OnJoinRandomFailed:" + message);
+    }
     public void ExitOnline()
     {
-        LANRoomManager.Instance.OnFindNewRoom = null;
-        LANRoomManager.Instance.OnChangeRoom = null;
-        LANRoomManager.Instance.OnLoseRoom = null;
-        LANRoomManager.Instance.Stop();
+        PhotonNetwork.Disconnect();
         Hide();
         _titleView.Show();
     }
 
     public void Show()
     {
+        PhotonNetwork.ConnectUsingSettings();
         this._view.SetActive(true);
+
     }
     public void Hide()
     {
         this._view.SetActive(false);
+    }
+    void IInRoomCallbacks.OnPlayerEnteredRoom(Photon.Realtime.Player newPlayer)
+    {
+        Debug.Log("OnPlayerEnteredRoom");
+        RefreshPlayers();
     }
 }
