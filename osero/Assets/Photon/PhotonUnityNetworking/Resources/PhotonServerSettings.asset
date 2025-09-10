@@ -39,6 +39,10 @@ MonoBehaviour:
   - DestroySpaceship
   - Fire
   - RespawnSpaceship
+  - MatchStart
+  - RpcSendMessage
+  - OseroViewRpcSendMessage
+  - OpponentPlaceDisk
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

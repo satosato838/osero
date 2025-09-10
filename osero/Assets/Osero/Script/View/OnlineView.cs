@@ -10,6 +10,7 @@ using UnityEngine.UI;
 public class OnlineView : MonoBehaviourPunCallbacks, IInRoomCallbacks
 {
     [SerializeField] private OseroTitleView _titleView;
+    [SerializeField] private OseroView _oseroView;
     [SerializeField] private TextMeshProUGUI _roomMembers;
     [SerializeField] private Button _createRoomBtn;
 
@@ -57,10 +58,6 @@ public class OnlineView : MonoBehaviourPunCallbacks, IInRoomCallbacks
         Debug.Log("OnJoinedRoom");
         RefreshPlayers();
     }
-    public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
-    {
-        RefreshPlayers();
-    }
     public override void OnJoinRandomFailed(short returnCode, string message)
     {
         Debug.LogError($"OnJoinRandomFailed:" + message);
@@ -76,7 +73,6 @@ public class OnlineView : MonoBehaviourPunCallbacks, IInRoomCallbacks
     {
         PhotonNetwork.ConnectUsingSettings();
         this._view.SetActive(true);
-
     }
     public void Hide()
     {
@@ -86,5 +82,24 @@ public class OnlineView : MonoBehaviourPunCallbacks, IInRoomCallbacks
     {
         Debug.Log("OnPlayerEnteredRoom");
         RefreshPlayers();
+        if (PhotonNetwork.CurrentRoom.PlayerCount == 2)
+        {
+            photonView.RPC(nameof(MatchStart), RpcTarget.All, "MatchStart");
+        }
+        photonView.RPC(nameof(RpcSendMessage), RpcTarget.All, "OnPlayerEnteredRoom");
+    }
+
+    [PunRPC]
+    private void RpcSendMessage(string message)
+    {
+        Debug.Log("RpcSendMessage:" + message);
+    }
+
+    [PunRPC]
+    private void MatchStart(string message)
+    {
+        Debug.Log("MatchStart:" + message);
+        _oseroView.GameStart();
+        Hide();
     }
 }
