@@ -36,8 +36,13 @@ public class SoundManager : MonoBehaviour
         _musicSource.Play();
     }
 
+    public void PlaySE(SESoundData.SE se, float delay = 0.0f)
+    {
+        StartCoroutine(PlaySoundEffect(se, delay));
+    }
 
-    public IEnumerator PlaySE(SESoundData.SE se, float delay = 0.0f)
+
+    private IEnumerator PlaySoundEffect(SESoundData.SE se, float delay = 0.0f)
     {
         if (_seSource.isPlaying)
         {
