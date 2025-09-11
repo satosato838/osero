@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using ExitGames.Client.Photon;
 using Photon.Pun;
-using Photon.Pun.UtilityScripts;
 using Photon.Realtime;
 using TMPro;
 using UnityEngine;
@@ -12,22 +10,12 @@ public class OnlineView : MonoBehaviourPunCallbacks, IInRoomCallbacks
     [SerializeField] private OseroTitleView _titleView;
     [SerializeField] private OseroView _oseroView;
     [SerializeField] private TextMeshProUGUI _roomMembers;
-    [SerializeField] private Button _createRoomBtn;
-
     [SerializeField] private Button _exitOnlineBtn;
-    [SerializeField] private TMP_InputField _ipt_PlayerName;
     [SerializeField] private GameObject _view;
 
     void Start()
     {
         Hide();
-
-        _createRoomBtn.onClick.AddListener(() =>
-        {
-            PhotonNetwork.NickName = _ipt_PlayerName.text;
-            // "Room"という名前のルームに参加する（ルームが存在しなければ作成して参加する）
-            PhotonNetwork.JoinOrCreateRoom("Room", new RoomOptions(), TypedLobby.Default);
-        });
         _exitOnlineBtn.onClick.AddListener(() => { ExitOnline(); });
     }
 
@@ -39,11 +27,7 @@ public class OnlineView : MonoBehaviourPunCallbacks, IInRoomCallbacks
             _roomMembers.text += item.Value.NickName + '\n';
         }
     }
-    // マスターサーバーへの接続が成功した時に呼ばれるコールバック
-    public override void OnConnectedToMaster()
-    {
-        Debug.Log("OnConnectedToMaster");
-    }
+
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
         foreach (var item in roomList)
@@ -71,8 +55,8 @@ public class OnlineView : MonoBehaviourPunCallbacks, IInRoomCallbacks
 
     public void Show()
     {
-        PhotonNetwork.ConnectUsingSettings();
         this._view.SetActive(true);
+        RefreshPlayers();
     }
     public void Hide()
     {

@@ -1,17 +1,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using Photon.Pun;
-using Photon.Pun.UtilityScripts;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class OseroView : MonoBehaviourPunCallbacks
 {
     public const int BoardSize = 8;
     [SerializeField] private OseroCellView OseroCellPrefab;
-    [SerializeField] private Button _Skipbtn;
     [SerializeField] private GameObject _Skip;
     [SerializeField] private Transform OseroCellParent;
+    [SerializeField] private TextMeshProUGUI _currentPlayerName;
     [SerializeField] private OseroGameScoreView _oseroGameScoreView;
     [SerializeField] private OseroGameResult _oseroGameResultView;
     [SerializeField] private GameObject _view;
@@ -23,15 +22,6 @@ public class OseroView : MonoBehaviourPunCallbacks
     private List<List<OseroCellView>> _AllCells = new List<List<OseroCellView>>();
     void Start()
     {
-        _Skipbtn.onClick.AddListener(() =>
-        {
-            _osero.Skip();
-            Refresh();
-        });
-#if UNITY_EDITOR
-        //debug only
-        _Skipbtn.gameObject.SetActive(false);
-#endif
         for (int y = 0; y < BoardSize; y++)
         {
             var cells = new List<OseroCellView>();
@@ -98,19 +88,28 @@ public class OseroView : MonoBehaviourPunCallbacks
 
     public void Refresh()
     {
+        _currentPlayerName.text = "Turn " + _osero.CurrentGamePlayer.Name;
         var disks = _osero.BoardDisks;
         for (int y = 0; y < BoardSize; y++)
         {
             for (int x = 0; x < BoardSize; x++)
             {
-                if (disks[y][x].IsDot)
+                if (IsMyTurn)
                 {
-                    _AllCells[y][x].SetDot(_osero.CurrentTurnDiskColor == Osero.PlayerTurn.Black ? Color.black : Color.white);
+                    if (disks[y][x].IsDot)
+                    {
+                        _AllCells[y][x].SetDot(_osero.CurrentTurnDiskColor == Osero.PlayerTurn.Black ? Color.black : Color.white);
+                    }
+                    else
+                    {
+                        _AllCells[y][x].SetDot(ClearColor);
+                    }
                 }
                 else
                 {
                     _AllCells[y][x].SetDot(ClearColor);
                 }
+
                 _AllCells[y][x].SetDisk(disks[y][x].DiskState switch
                 {
                     Osero.DiskState.None => ClearColor,
@@ -119,7 +118,6 @@ public class OseroView : MonoBehaviourPunCallbacks
                     _ => ClearColor
                 });
             }
-            PhotonNetwork.CurrentRoom.SetTurn(_osero.CurrentTurnDiskColor == Osero.PlayerTurn.Black ? 1 : 2);
         }
         _oseroGameScoreView.Refresh(_osero.GetWhiteDiskCount, _osero.GetBlackDiskCount);
         if (_osero.IsGameEnd())
