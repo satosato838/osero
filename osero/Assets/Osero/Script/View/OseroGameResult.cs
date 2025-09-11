@@ -17,12 +17,14 @@ public class OseroGameResult : MonoBehaviour
         _retrybtn.onClick.AddListener(() =>
         {
             _oseroView.GameStart();
+            SoundManager.Instance.PlaySE(SESoundData.SE.buttonpush);
             Hide();
         });
         _titlebtn.onClick.AddListener(() =>
         {
             _oseroView.Hide();
             _oseroTitleView.Show();
+            SoundManager.Instance.PlaySE(SESoundData.SE.buttonpush);
         });
     }
 
@@ -33,6 +35,8 @@ public class OseroGameResult : MonoBehaviour
         _resultColor.gameObject.SetActive(result == Osero.Result.BlackWin || result == Osero.Result.WhiteWin);
         _txt_result.text = result == Osero.Result.BlackWin || result == Osero.Result.WhiteWin ? "WIN" : "DRAW";
         _resultColor.color = winnerColor;
+        SoundManager.Instance.PlaySE(SESoundData.SE.gameend);
+        SoundManager.Instance.StopBGM();
     }
     public void Hide()
     {

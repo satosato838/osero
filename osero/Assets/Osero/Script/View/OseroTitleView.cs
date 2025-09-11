@@ -27,17 +27,20 @@ public class OseroTitleView : MonoBehaviourPunCallbacks
             //PhotonNetwork.GetCustomRoomList(TypedLobby.Default,);
             // "Room"という名前のルームに参加する（ルームが存在しなければ作成して参加する）
             PhotonNetwork.JoinOrCreateRoom("Room", new RoomOptions(), TypedLobby.Default);
+            SoundManager.Instance.PlaySE(SESoundData.SE.buttonpush);
         });
 
         _gameStartbtn.onClick.AddListener(() =>
         {
             PhotonNetwork.ConnectUsingSettings();
+            SoundManager.Instance.PlaySE(SESoundData.SE.buttonpush);
         });
 
         _closebtn.onClick.AddListener(() =>
         {
             PhotonNetwork.Disconnect();
             _modalview.gameObject.SetActive(false);
+            SoundManager.Instance.PlaySE(SESoundData.SE.buttonpush);
         });
         Show();
     }

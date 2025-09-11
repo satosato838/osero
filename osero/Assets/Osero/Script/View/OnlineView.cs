@@ -16,7 +16,11 @@ public class OnlineView : MonoBehaviourPunCallbacks, IInRoomCallbacks
     void Start()
     {
         Hide();
-        _exitOnlineBtn.onClick.AddListener(() => { ExitOnline(); });
+        _exitOnlineBtn.onClick.AddListener(() =>
+        {
+            ExitOnline();
+            SoundManager.Instance.PlaySE(SESoundData.SE.buttonpush);
+        });
     }
 
     private void RefreshPlayers()

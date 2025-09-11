@@ -48,6 +48,8 @@ public class OseroView : MonoBehaviourPunCallbacks
         MyTurn = _osero.GetIdPlayerTurn(GetMyId());
         SkipEffectHide();
         Refresh();
+        SoundManager.Instance.PlaySE(SESoundData.SE.gamestart);
+        SoundManager.Instance.PlayBGM(BGMSoundData.BGM.main);
     }
 
     private int GetMyId()
@@ -77,6 +79,7 @@ public class OseroView : MonoBehaviourPunCallbacks
         _osero.PlaceDisk(pos);
         Refresh();
         photonView.RPC(nameof(OpponentPlaceDisk), RpcTarget.All, new int[] { pos.Item1, pos.Item2 });
+        SoundManager.Instance.PlaySE(SESoundData.SE.diskpush);
     }
 
     [PunRPC]
@@ -84,6 +87,7 @@ public class OseroView : MonoBehaviourPunCallbacks
     {
         _osero.PlaceDisk((messages[0], messages[1]));
         Refresh();
+        SoundManager.Instance.PlaySE(SESoundData.SE.diskpush);
     }
 
     public void Refresh()
@@ -134,7 +138,8 @@ public class OseroView : MonoBehaviourPunCallbacks
     private void ShowSkipEffect()
     {
         _Skip.gameObject.SetActive(true);
-        Invoke(nameof(SkipEffectHide), 2.0f);
+        SoundManager.Instance.PlaySE(SESoundData.SE.skip);
+        Invoke(nameof(SkipEffectHide), 1.0f);
     }
     private void SkipEffectHide()
     {
