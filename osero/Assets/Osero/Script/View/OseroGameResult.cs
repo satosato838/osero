@@ -35,7 +35,7 @@ public class OseroGameResult : MonoBehaviour
         _resultColor.gameObject.SetActive(result == Osero.Result.BlackWin || result == Osero.Result.WhiteWin);
         _txt_result.text = result == Osero.Result.BlackWin || result == Osero.Result.WhiteWin ? "WIN" : "DRAW";
         _resultColor.color = winnerColor;
-        SoundManager.Instance.PlaySE(SESoundData.SE.gameend);
+        SoundManager.Instance.PlaySE(SESoundData.SE.gameend, 0.2f);
         SoundManager.Instance.StopBGM();
     }
     public void Hide()

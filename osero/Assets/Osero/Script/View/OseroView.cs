@@ -48,7 +48,7 @@ public class OseroView : MonoBehaviourPunCallbacks
         MyTurn = _osero.GetIdPlayerTurn(GetMyId());
         SkipEffectHide();
         Refresh();
-        SoundManager.Instance.PlaySE(SESoundData.SE.gamestart);
+        SoundManager.Instance.PlaySE(SESoundData.SE.gamestart, 0.2f);
         SoundManager.Instance.PlayBGM(BGMSoundData.BGM.main);
     }
 
@@ -138,7 +138,7 @@ public class OseroView : MonoBehaviourPunCallbacks
     private void ShowSkipEffect()
     {
         _Skip.gameObject.SetActive(true);
-        SoundManager.Instance.PlaySE(SESoundData.SE.skip);
+        SoundManager.Instance.PlaySE(SESoundData.SE.skip, 0.2f);
         Invoke(nameof(SkipEffectHide), 1.0f);
     }
     private void SkipEffectHide()

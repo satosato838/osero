@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -36,7 +37,7 @@ public class SoundManager : MonoBehaviour
     }
 
 
-    public void PlaySE(SESoundData.SE se)
+    public IEnumerator PlaySE(SESoundData.SE se, float delay = 0.0f)
     {
         if (_seSource.isPlaying)
         {
@@ -44,6 +45,7 @@ public class SoundManager : MonoBehaviour
         }
         SESoundData data = seSourceList.Find(data => data.se == se);
         _seSource.volume = data.volume;
+        yield return new WaitForSeconds(delay);
         _seSource.PlayOneShot(data.audioClip);
     }
 
