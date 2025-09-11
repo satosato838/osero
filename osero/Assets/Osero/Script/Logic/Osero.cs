@@ -31,16 +31,20 @@ public class Osero
     public PlayerTurn CurrentTurnDiskColor { get; private set; }
 
     public Result GameResult { get; private set; }
+    public List<GamePlayer> GamePlayers { get; private set; }
 
     public int GetWhiteDiskCount => BoardDisks.SelectMany((disks, i) => disks.Select(disk => disk.DiskState)).Count(v => v == DiskState.White);
     public int GetBlackDiskCount => BoardDisks.SelectMany((disks, i) => disks.Select(disk => disk.DiskState)).Count(v => v == DiskState.Black);
     Action PlayerSkip;
     public bool IsAnyDot => BoardDisks.SelectMany((disks, i) => disks.Select(disk => disk)).Any(v => v.IsDot);
-    public Osero(Action skip)
+    public Osero(List<GamePlayer> gamePlayers, Action skip)
     {
+        GamePlayers = gamePlayers;
         StartGame();
         PlayerSkip = skip;
     }
+
+    public PlayerTurn GetIdPlayerTurn(int playerId) => GamePlayers.First(p => p.Id == playerId).PlayerColorTurn;
 
     private void StartGame()
     {
@@ -245,4 +249,20 @@ public class OseroDisk
     {
         IsDot = isDot;
     }
+}
+
+public class GamePlayer
+{
+    public int Id;
+    public string Name;
+
+    public Osero.PlayerTurn PlayerColorTurn;
+
+    public GamePlayer(int id, string name, Osero.PlayerTurn playerColorTurn)
+    {
+        Id = id;
+        Name = name;
+        PlayerColorTurn = playerColorTurn;
+    }
+
 }

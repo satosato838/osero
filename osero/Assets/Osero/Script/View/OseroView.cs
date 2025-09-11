@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Photon.Pun;
 using Photon.Pun.UtilityScripts;
 using UnityEngine;
@@ -16,6 +17,7 @@ public class OseroView : MonoBehaviourPunCallbacks
     [SerializeField] private GameObject _view;
     private Osero _osero;
     private Osero.PlayerTurn MyTurn;
+    private bool IsMyTurn => MyTurn == _osero.CurrentTurnDiskColor;
     private Color ClearColor => new Color(1, 1, 1, 0);
     private bool IsShowSkip => _Skip.activeSelf;
     private List<List<OseroCellView>> _AllCells = new List<List<OseroCellView>>();
@@ -51,24 +53,40 @@ public class OseroView : MonoBehaviourPunCallbacks
     public void GameStart()
     {
         Show();
-        _osero = new Osero(() => ShowSkipEffect());
+        _osero = new Osero(CreatePlayers(), () => ShowSkipEffect());
         _oseroGameResultView.Hide();
-        MyTurn = PhotonNetwork.CurrentRoom.GetPlayer(1).IsMasterClient ? Osero.PlayerTurn.Black : Osero.PlayerTurn.White;
+        MyTurn = _osero.GetIdPlayerTurn(GetMyId());
         SkipEffectHide();
         Refresh();
     }
+
+    private int GetMyId()
+    {
+        return PhotonNetwork.CurrentRoom.Players.First(p => p.Value.NickName.Equals(PhotonNetwork.LocalPlayer.NickName)).Value.ActorNumber;
+    }
+
+    private List<GamePlayer> CreatePlayers()
+    {
+        List<GamePlayer> players = new List<GamePlayer>();
+
+        foreach (var item in PhotonNetwork.CurrentRoom.Players)
+        {
+            GamePlayer player = new GamePlayer(item.Value.ActorNumber, item.Value.NickName, GetPlayerTurn(item.Key));
+            players.Add(player);
+        }
+        return players;
+    }
+
     private Osero.PlayerTurn GetPlayerTurn(int turnId)
     {
         return turnId == 1 ? Osero.PlayerTurn.Black : Osero.PlayerTurn.White;
     }
     public void PlaceDisk((int, int) pos)
     {
-        if (GetPlayerTurn(PhotonNetwork.CurrentRoom.GetTurn()) != MyTurn) return;
-        if (IsShowSkip) return;
+        if (!IsMyTurn || IsShowSkip) return;
         _osero.PlaceDisk(pos);
         Refresh();
         photonView.RPC(nameof(OpponentPlaceDisk), RpcTarget.All, new int[] { pos.Item1, pos.Item2 });
-        PhotonNetwork.CurrentRoom.SetTurn(PhotonNetwork.CurrentRoom.GetTurn() == 1 ? 2 : 1);
     }
 
     [PunRPC]
