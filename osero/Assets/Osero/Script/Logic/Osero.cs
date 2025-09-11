@@ -27,24 +27,30 @@ public class Osero
     }
     public List<List<OseroDisk>> BoardDisks { get; private set; } = new List<List<OseroDisk>>();
 
-    private PlayerTurn firstPlayerColor = PlayerTurn.Black;
-    public PlayerTurn CurrentTurnDiskColor { get; private set; }
+    public PlayerTurn CurrentTurnDiskColor => CurrentGamePlayer.PlayerColorTurn;
+
+    public GamePlayer CurrentGamePlayer { get; private set; }
 
     public Result GameResult { get; private set; }
+    public List<GamePlayer> GamePlayers { get; private set; }
 
     public int GetWhiteDiskCount => BoardDisks.SelectMany((disks, i) => disks.Select(disk => disk.DiskState)).Count(v => v == DiskState.White);
     public int GetBlackDiskCount => BoardDisks.SelectMany((disks, i) => disks.Select(disk => disk.DiskState)).Count(v => v == DiskState.Black);
     Action PlayerSkip;
     public bool IsAnyDot => BoardDisks.SelectMany((disks, i) => disks.Select(disk => disk)).Any(v => v.IsDot);
-    public Osero(Action skip)
+    public Osero(List<GamePlayer> gamePlayers, Action skip)
     {
+        GamePlayers = gamePlayers;
         StartGame();
         PlayerSkip = skip;
     }
 
+    public PlayerTurn GetIdPlayerTurn(int playerId) => GetIdPlayer(playerId).PlayerColorTurn;
+    public GamePlayer GetIdPlayer(int playerId) => GamePlayers.First(p => p.Id == playerId);
+
     private void StartGame()
     {
-        CurrentTurnDiskColor = firstPlayerColor;
+        CurrentGamePlayer = GetIdPlayer(1);
 
         BoardDisks = new List<List<OseroDisk>>();
         for (int y = 0; y < BoardSize; y++)
@@ -77,7 +83,7 @@ public class Osero
 
     private void PlayerChange()
     {
-        CurrentTurnDiskColor = CurrentTurnDiskColor == PlayerTurn.Black ? PlayerTurn.White : PlayerTurn.Black;
+        CurrentGamePlayer = CurrentGamePlayer.PlayerColorTurn == PlayerTurn.Black ? GetIdPlayer(2) : GetIdPlayer(1);
     }
 
 
@@ -245,4 +251,20 @@ public class OseroDisk
     {
         IsDot = isDot;
     }
+}
+
+public class GamePlayer
+{
+    public int Id;
+    public string Name;
+
+    public Osero.PlayerTurn PlayerColorTurn;
+
+    public GamePlayer(int id, string name, Osero.PlayerTurn playerColorTurn)
+    {
+        Id = id;
+        Name = name;
+        PlayerColorTurn = playerColorTurn;
+    }
+
 }
